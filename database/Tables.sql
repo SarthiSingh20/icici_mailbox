@@ -36,6 +36,7 @@ BEGIN
     (
         ShipmentId BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Shipments PRIMARY KEY,
         TrackingNumber NVARCHAR(50) NOT NULL CONSTRAINT UQ_Shipments_TrackingNumber UNIQUE,
+        Direction NVARCHAR(20) NOT NULL CONSTRAINT DF_Shipments_Direction DEFAULT (N'Outbound'),
         CustomerId INT NOT NULL,
         OriginBranchId INT NOT NULL,
         DestinationBranchId INT NOT NULL,
@@ -44,6 +45,7 @@ BEGIN
         Status NVARCHAR(30) NOT NULL CONSTRAINT DF_Shipments_Status DEFAULT (N'Pending'),
         CreatedUtc DATETIME2(0) NOT NULL CONSTRAINT DF_Shipments_CreatedUtc DEFAULT (SYSUTCDATETIME()),
         UpdatedUtc DATETIME2(0) NOT NULL CONSTRAINT DF_Shipments_UpdatedUtc DEFAULT (SYSUTCDATETIME()),
+        CONSTRAINT CK_Shipments_Direction CHECK (Direction IN (N'Inbound', N'Outbound')),
         CONSTRAINT CK_Shipments_Status CHECK (Status IN (N'Pending', N'InTransit', N'Delivered', N'Cancelled')),
         CONSTRAINT FK_Shipments_Customers FOREIGN KEY (CustomerId) REFERENCES dbo.Customers(CustomerId),
         CONSTRAINT FK_Shipments_OriginBranch FOREIGN KEY (OriginBranchId) REFERENCES dbo.Branches(BranchId),
@@ -52,6 +54,19 @@ BEGIN
 
     CREATE INDEX IX_Shipments_Status ON dbo.Shipments(Status);
     CREATE INDEX IX_Shipments_CreatedUtc ON dbo.Shipments(CreatedUtc DESC);
+END;
+GO
+
+-- Upgrade an existing starter database created before shipment direction was introduced.
+IF COL_LENGTH(N'dbo.Shipments', N'Direction') IS NULL
+BEGIN
+    ALTER TABLE dbo.Shipments
+        ADD Direction NVARCHAR(20) NOT NULL
+            CONSTRAINT DF_Shipments_Direction DEFAULT (N'Outbound') WITH VALUES;
+
+    ALTER TABLE dbo.Shipments
+        ADD CONSTRAINT CK_Shipments_Direction
+            CHECK (Direction IN (N'Inbound', N'Outbound'));
 END;
 GO
 

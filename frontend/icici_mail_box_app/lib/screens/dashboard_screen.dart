@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../models/dashboard_summary.dart';
+import '../widgets/api_settings_dialog.dart';
 import '../widgets/stat_card.dart';
 import 'inbound_screen.dart';
 import 'masters_screen.dart';
@@ -49,11 +50,20 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(navigationIndexProvider);
     final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final isExtendedRail = MediaQuery.sizeOf(context).width >= 1150;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('ICICI Mail Box'),
         actions: [
+          IconButton(
+            tooltip: 'API connection settings',
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (context) => const ApiSettingsDialog(),
+            ),
+            icon: const Icon(Icons.dns_outlined),
+          ),
           IconButton(
             tooltip: 'Notifications',
             onPressed: () {},
@@ -69,9 +79,11 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           if (isWide)
             NavigationRail(
-              extended: MediaQuery.sizeOf(context).width >= 1150,
+              extended: isExtendedRail,
               selectedIndex: selectedIndex,
-              labelType: NavigationRailLabelType.all,
+              labelType: isExtendedRail
+                  ? NavigationRailLabelType.none
+                  : NavigationRailLabelType.all,
               onDestinationSelected: (index) =>
                   ref.read(navigationIndexProvider.notifier).select(index),
               destinations: const [

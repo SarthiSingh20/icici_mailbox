@@ -1,6 +1,39 @@
 @IciciMailBox.API_HostAddress = http://localhost:5053
 
-GET {{IciciMailBox.API_HostAddress}}/weatherforecast/
+GET {{IciciMailBox.API_HostAddress}}/health
 Accept: application/json
 
 ###
+
+GET {{IciciMailBox.API_HostAddress}}/api/masters/branches
+Accept: application/json
+
+###
+
+GET {{IciciMailBox.API_HostAddress}}/api/shipments?direction=Outbound
+Accept: application/json
+
+###
+
+POST {{IciciMailBox.API_HostAddress}}/api/shipments
+Content-Type: application/json
+
+{
+  "direction": "Outbound",
+  "trackingNumber": "ICICI-OUT-0002",
+  "customerId": 1,
+  "originBranchId": 1,
+  "destinationBranchId": 2,
+  "recipientName": "Demo Recipient",
+  "recipientAddress": "1 Demo Street, New Delhi"
+}
+
+###
+
+PATCH {{IciciMailBox.API_HostAddress}}/api/shipments/1/status
+Content-Type: application/json
+
+{
+  "status": "Delivered",
+  "eventDescription": "Delivered to recipient."
+}

@@ -21,7 +21,8 @@ BEGIN
         @OriginBranchId = @MumbaiBranchId,
         @DestinationBranchId = @DelhiBranchId,
         @RecipientName = N'Demo Recipient',
-        @RecipientAddress = N'1 Demo Street, New Delhi';
+        @RecipientAddress = N'1 Demo Street, New Delhi',
+        @Direction = N'Outbound';
 
     EXEC dbo.usp_Shipment_UpdateStatus
         @ShipmentId = (SELECT ShipmentId FROM dbo.Shipments WHERE TrackingNumber = N'ICICI-DEMO-0001'),

@@ -18,4 +18,4 @@ dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:SqlServer" "Server=tcp:YOUR_SERVER,1433;Database=IciciMailBox;User Id=YOUR_USER;Password=YOUR_PASSWORD;Encrypt=True;TrustServerCertificate=False;"
 ```
 
-The `DashboardController` calls `dbo.usp_Shipment_GetDashboardSummary` through ADO.NET. There is no Entity Framework dependency.
+The Flutter inbound/outbound forms use active branches and customers as dropdown data. Their shipment records are written through `dbo.usp_Shipment_Create`, read through `dbo.usp_Shipment_GetList`, and status changes use `dbo.usp_Shipment_UpdateStatus`. There is no Entity Framework dependency.

@@ -37,12 +37,22 @@ Full Xcode is still required to run Flutter on an iOS simulator or physical iOS 
    flutter run
    ```
 
-Set the client API base URL through `ApiClient.saveBaseUrl` when adding settings or sign-in UI. Its initial dashboard uses demonstration data until the API is connected.
+The dashboard deliberately shows demonstration figures until it is connected. Open the **API connection** icon in the Flutter app bar and set the API URL to `http://localhost:5053` when running both projects on this Mac.
+
+## Courier workflow
+
+The Inbound and Outbound navigation items provide separate shipment forms and registers. Each form captures a tracking number, sender/customer, origin and destination branches, recipient name, and recipient address. New records begin as `Pending`; the register supports local search and status updates.
+
+Before using these screens against a database, rerun `database/Tables.sql` and `database/StoredProcedures.sql` to add the `Direction` column and the shipment/master procedures. Then run `database/SeedData.sql` if a demonstration record is wanted.
 
 ## API baseline
 
 - `GET /health`
 - `GET /api/dashboard/summary` — calls `dbo.usp_Shipment_GetDashboardSummary` with ADO.NET
+- `GET /api/masters/branches` and `GET /api/masters/customers` — dropdown data
+- `GET /api/shipments?direction=Inbound|Outbound&search=<text>` — shipment register
+- `POST /api/shipments` — creates a shipment and audit event
+- `PATCH /api/shipments/{shipmentId}/status` — updates status and writes an audit event
 
 ## Packages
 
