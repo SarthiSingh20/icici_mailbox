@@ -24,8 +24,10 @@ Content-Type: application/json
   "customerId": 1,
   "originBranchId": 1,
   "destinationBranchId": 2,
+  "packageWeightKg": 1.250,
   "recipientName": "Demo Recipient",
-  "recipientAddress": "1 Demo Street, New Delhi"
+  "recipientAddress": "1 Demo Street, New Delhi",
+  "sentUtc": "2026-11-04T10:30:00Z"
 }
 
 ###

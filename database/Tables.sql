@@ -40,12 +40,16 @@ BEGIN
         CustomerId INT NOT NULL,
         OriginBranchId INT NOT NULL,
         DestinationBranchId INT NOT NULL,
+        PackageWeightKg DECIMAL(10,3) NOT NULL,
         RecipientName NVARCHAR(160) NOT NULL,
         RecipientAddress NVARCHAR(500) NOT NULL,
         Status NVARCHAR(30) NOT NULL CONSTRAINT DF_Shipments_Status DEFAULT (N'Pending'),
+        ReceivedUtc DATETIME2(0) NULL,
+        SentUtc DATETIME2(0) NULL,
         CreatedUtc DATETIME2(0) NOT NULL CONSTRAINT DF_Shipments_CreatedUtc DEFAULT (SYSUTCDATETIME()),
         UpdatedUtc DATETIME2(0) NOT NULL CONSTRAINT DF_Shipments_UpdatedUtc DEFAULT (SYSUTCDATETIME()),
         CONSTRAINT CK_Shipments_Direction CHECK (Direction IN (N'Inbound', N'Outbound')),
+        CONSTRAINT CK_Shipments_PackageWeightKg CHECK (PackageWeightKg > 0),
         CONSTRAINT CK_Shipments_Status CHECK (Status IN (N'Pending', N'InTransit', N'Delivered', N'Cancelled')),
         CONSTRAINT FK_Shipments_Customers FOREIGN KEY (CustomerId) REFERENCES dbo.Customers(CustomerId),
         CONSTRAINT FK_Shipments_OriginBranch FOREIGN KEY (OriginBranchId) REFERENCES dbo.Branches(BranchId),
@@ -67,6 +71,35 @@ BEGIN
     ALTER TABLE dbo.Shipments
         ADD CONSTRAINT CK_Shipments_Direction
             CHECK (Direction IN (N'Inbound', N'Outbound'));
+END;
+GO
+
+-- Upgrade an existing starter database with parcel weight and handover times.
+IF COL_LENGTH(N'dbo.Shipments', N'PackageWeightKg') IS NULL
+BEGIN
+    ALTER TABLE dbo.Shipments ADD PackageWeightKg DECIMAL(10,3) NULL;
+END;
+
+IF COL_LENGTH(N'dbo.Shipments', N'ReceivedUtc') IS NULL
+BEGIN
+    ALTER TABLE dbo.Shipments ADD ReceivedUtc DATETIME2(0) NULL;
+END;
+
+IF COL_LENGTH(N'dbo.Shipments', N'SentUtc') IS NULL
+BEGIN
+    ALTER TABLE dbo.Shipments ADD SentUtc DATETIME2(0) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = N'CK_Shipments_PackageWeightKg'
+      AND parent_object_id = OBJECT_ID(N'dbo.Shipments')
+)
+BEGIN
+    ALTER TABLE dbo.Shipments
+        ADD CONSTRAINT CK_Shipments_PackageWeightKg
+            CHECK (PackageWeightKg IS NULL OR PackageWeightKg > 0);
 END;
 GO
 

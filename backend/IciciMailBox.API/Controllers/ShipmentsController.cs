@@ -40,6 +40,21 @@ public sealed class ShipmentsController(IShipmentService shipmentService) : Cont
         [FromBody] CreateShipmentRequest request,
         CancellationToken cancellationToken)
     {
+        if (request.Direction == "Inbound" && request.ReceivedUtc is null)
+        {
+            ModelState.AddModelError(nameof(request.ReceivedUtc), "Receiving time is required for inbound shipments.");
+        }
+
+        if (request.Direction == "Outbound" && request.SentUtc is null)
+        {
+            ModelState.AddModelError(nameof(request.SentUtc), "Send time is required for outbound shipments.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
         var shipment = await shipmentService.CreateShipmentAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetShipment), new { shipmentId = shipment.ShipmentId }, shipment);
     }

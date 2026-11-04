@@ -20,8 +20,10 @@ BEGIN
         @CustomerId = @CustomerId,
         @OriginBranchId = @MumbaiBranchId,
         @DestinationBranchId = @DelhiBranchId,
+        @PackageWeightKg = 1.250,
         @RecipientName = N'Demo Recipient',
         @RecipientAddress = N'1 Demo Street, New Delhi',
+        @SentUtc = SYSUTCDATETIME(),
         @Direction = N'Outbound';
 
     EXEC dbo.usp_Shipment_UpdateStatus

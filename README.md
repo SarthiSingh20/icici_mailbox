@@ -41,7 +41,7 @@ The dashboard deliberately shows demonstration figures until it is connected. Op
 
 ## Courier workflow
 
-The Inbound and Outbound navigation items provide separate shipment forms and registers. Each form captures a tracking number, sender/customer, origin and destination branches, recipient name, and recipient address. New records begin as `Pending`; the register supports local search and status updates.
+The Inbound and Outbound navigation items provide separate shipment forms and registers. Each form captures a tracking number, sender/customer, origin and destination branches, package weight in kilograms, recipient name, and recipient address. Inbound records also require a receiving time; outbound records require a send time. New records begin as `Pending`; the register supports local search and status updates.
 
 Before using these screens against a database, rerun `database/Tables.sql` and `database/StoredProcedures.sql` to add the `Direction` column and the shipment/master procedures. Then run `database/SeedData.sql` if a demonstration record is wanted.
 

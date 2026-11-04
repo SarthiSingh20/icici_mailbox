@@ -39,8 +39,11 @@ public sealed class ShipmentService(IShipmentRepository shipmentRepository) : IS
         CustomerId = request.CustomerId,
         OriginBranchId = request.OriginBranchId,
         DestinationBranchId = request.DestinationBranchId,
+        PackageWeightKg = request.PackageWeightKg,
         RecipientName = request.RecipientName.Trim(),
-        RecipientAddress = request.RecipientAddress.Trim()
+        RecipientAddress = request.RecipientAddress.Trim(),
+        ReceivedUtc = request.ReceivedUtc?.ToUniversalTime(),
+        SentUtc = request.SentUtc?.ToUniversalTime()
     };
 
     private static UpdateShipmentStatusRequest Normalize(UpdateShipmentStatusRequest request) => new()

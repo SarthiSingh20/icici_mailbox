@@ -75,8 +75,14 @@ public sealed class ShipmentRepository(ISqlConnectionFactory connectionFactory) 
         command.Parameters.Add("@CustomerId", SqlDbType.Int).Value = request.CustomerId;
         command.Parameters.Add("@OriginBranchId", SqlDbType.Int).Value = request.OriginBranchId;
         command.Parameters.Add("@DestinationBranchId", SqlDbType.Int).Value = request.DestinationBranchId;
+        var packageWeightParameter = command.Parameters.Add("@PackageWeightKg", SqlDbType.Decimal);
+        packageWeightParameter.Precision = 10;
+        packageWeightParameter.Scale = 3;
+        packageWeightParameter.Value = request.PackageWeightKg;
         command.Parameters.Add("@RecipientName", SqlDbType.NVarChar, 160).Value = request.RecipientName;
         command.Parameters.Add("@RecipientAddress", SqlDbType.NVarChar, 500).Value = request.RecipientAddress;
+        command.Parameters.Add("@ReceivedUtc", SqlDbType.DateTime2).Value = (object?)request.ReceivedUtc ?? DBNull.Value;
+        command.Parameters.Add("@SentUtc", SqlDbType.DateTime2).Value = (object?)request.SentUtc ?? DBNull.Value;
         command.Parameters.Add("@Direction", SqlDbType.NVarChar, 20).Value = request.Direction;
 
         await connection.OpenAsync(cancellationToken);
@@ -147,9 +153,18 @@ public sealed class ShipmentRepository(ISqlConnectionFactory connectionFactory) 
         reader.GetString(reader.GetOrdinal("OriginBranchName")),
         reader.GetInt32(reader.GetOrdinal("DestinationBranchId")),
         reader.GetString(reader.GetOrdinal("DestinationBranchName")),
+        reader.IsDBNull(reader.GetOrdinal("PackageWeightKg"))
+            ? null
+            : reader.GetDecimal(reader.GetOrdinal("PackageWeightKg")),
         reader.GetString(reader.GetOrdinal("RecipientName")),
         reader.GetString(reader.GetOrdinal("RecipientAddress")),
         reader.GetString(reader.GetOrdinal("Status")),
+        reader.IsDBNull(reader.GetOrdinal("ReceivedUtc"))
+            ? null
+            : reader.GetDateTime(reader.GetOrdinal("ReceivedUtc")),
+        reader.IsDBNull(reader.GetOrdinal("SentUtc"))
+            ? null
+            : reader.GetDateTime(reader.GetOrdinal("SentUtc")),
         reader.GetDateTime(reader.GetOrdinal("CreatedUtc")),
         reader.GetDateTime(reader.GetOrdinal("UpdatedUtc")));
 }

@@ -17,8 +17,11 @@ CREATE OR ALTER PROCEDURE dbo.usp_Shipment_Create
     @CustomerId INT,
     @OriginBranchId INT,
     @DestinationBranchId INT,
+    @PackageWeightKg DECIMAL(10,3),
     @RecipientName NVARCHAR(160),
     @RecipientAddress NVARCHAR(500),
+    @ReceivedUtc DATETIME2(0) = NULL,
+    @SentUtc DATETIME2(0) = NULL,
     @Direction NVARCHAR(20) = N'Outbound'
 AS
 BEGIN
@@ -30,6 +33,22 @@ BEGIN
         THROW 50003, 'Invalid shipment direction.', 1;
     END;
 
+    IF @PackageWeightKg <= 0
+    BEGIN
+        THROW 50004, 'Package weight must be greater than zero.', 1;
+    END;
+
+    IF (@Direction = N'Inbound' AND @ReceivedUtc IS NULL)
+       OR (@Direction = N'Outbound' AND @SentUtc IS NULL)
+    BEGIN
+        THROW 50005, 'Inbound shipments require a receiving time and outbound shipments require a send time.', 1;
+    END;
+
+    IF @Direction = N'Inbound'
+        SET @SentUtc = NULL;
+    ELSE
+        SET @ReceivedUtc = NULL;
+
     BEGIN TRANSACTION;
 
     INSERT INTO dbo.Shipments
@@ -39,8 +58,11 @@ BEGIN
         CustomerId,
         OriginBranchId,
         DestinationBranchId,
+        PackageWeightKg,
         RecipientName,
         RecipientAddress,
+        ReceivedUtc,
+        SentUtc,
         Status
     )
     VALUES
@@ -50,8 +72,11 @@ BEGIN
         @CustomerId,
         @OriginBranchId,
         @DestinationBranchId,
+        @PackageWeightKg,
         @RecipientName,
         @RecipientAddress,
+        @ReceivedUtc,
+        @SentUtc,
         N'Pending'
     );
 
@@ -72,9 +97,12 @@ BEGIN
         originBranch.BranchName AS OriginBranchName,
         s.DestinationBranchId,
         destinationBranch.BranchName AS DestinationBranchName,
+        s.PackageWeightKg,
         s.RecipientName,
         s.RecipientAddress,
         s.Status,
+        s.ReceivedUtc,
+        s.SentUtc,
         s.CreatedUtc,
         s.UpdatedUtc
     FROM dbo.Shipments AS s
@@ -110,9 +138,12 @@ BEGIN
         originBranch.BranchName AS OriginBranchName,
         s.DestinationBranchId,
         destinationBranch.BranchName AS DestinationBranchName,
+        s.PackageWeightKg,
         s.RecipientName,
         s.RecipientAddress,
         s.Status,
+        s.ReceivedUtc,
+        s.SentUtc,
         s.CreatedUtc,
         s.UpdatedUtc
     FROM dbo.Shipments AS s

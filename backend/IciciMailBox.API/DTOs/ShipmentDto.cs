@@ -10,8 +10,11 @@ public sealed record ShipmentDto(
     string OriginBranchName,
     int DestinationBranchId,
     string DestinationBranchName,
+    decimal? PackageWeightKg,
     string RecipientName,
     string RecipientAddress,
     string Status,
+    DateTime? ReceivedUtc,
+    DateTime? SentUtc,
     DateTime CreatedUtc,
     DateTime UpdatedUtc);

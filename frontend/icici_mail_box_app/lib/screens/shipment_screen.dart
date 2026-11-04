@@ -18,6 +18,7 @@ class _ShipmentScreenState extends State<ShipmentScreen> {
   final _apiClient = ApiClient();
   final _formKey = GlobalKey<FormState>();
   final _trackingController = TextEditingController();
+  final _weightController = TextEditingController();
   final _recipientNameController = TextEditingController();
   final _recipientAddressController = TextEditingController();
   final _searchController = TextEditingController();
@@ -31,6 +32,7 @@ class _ShipmentScreenState extends State<ShipmentScreen> {
   String? _errorMessage;
   bool _isLoading = true;
   bool _isSubmitting = false;
+  DateTime _handlingTime = DateTime.now();
 
   bool get _isInbound => widget.direction == 'Inbound';
 
@@ -53,6 +55,7 @@ class _ShipmentScreenState extends State<ShipmentScreen> {
   @override
   void dispose() {
     _trackingController.dispose();
+    _weightController.dispose();
     _recipientNameController.dispose();
     _recipientAddressController.dispose();
     _searchController
@@ -126,11 +129,15 @@ class _ShipmentScreenState extends State<ShipmentScreen> {
           customerId: _customerId!,
           originBranchId: _originBranchId!,
           destinationBranchId: _destinationBranchId!,
+          packageWeightKg: double.parse(_weightController.text.trim()),
           recipientName: _recipientNameController.text.trim(),
           recipientAddress: _recipientAddressController.text.trim(),
+          receivedUtc: _isInbound ? _handlingTime : null,
+          sentUtc: _isInbound ? null : _handlingTime,
         ),
       );
       _trackingController.clear();
+      _weightController.clear();
       _recipientNameController.clear();
       _recipientAddressController.clear();
       await _load();
@@ -169,6 +176,36 @@ class _ShipmentScreenState extends State<ShipmentScreen> {
     if (mounted) {
       setState(() {});
     }
+  }
+
+  Future<void> _selectHandlingTime() async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: _handlingTime,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (selectedDate == null || !mounted) {
+      return;
+    }
+
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_handlingTime),
+    );
+    if (selectedTime == null || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _handlingTime = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        selectedTime.hour,
+        selectedTime.minute,
+      );
+    });
   }
 
   void _showMessage(String message, {bool isError = false}) {
@@ -300,6 +337,8 @@ class _ShipmentScreenState extends State<ShipmentScreen> {
                     SizedBox(width: fieldWidth, child: _customerField()),
                     SizedBox(width: fieldWidth, child: _originField()),
                     SizedBox(width: fieldWidth, child: _destinationField()),
+                    SizedBox(width: fieldWidth, child: _weightField()),
+                    SizedBox(width: fieldWidth, child: _handlingTimeField(context)),
                     SizedBox(width: fieldWidth, child: _recipientNameField()),
                     SizedBox(width: fieldWidth, child: _recipientAddressField()),
                   ],
@@ -337,6 +376,42 @@ class _ShipmentScreenState extends State<ShipmentScreen> {
     ),
     validator: (value) => value == null || value.trim().isEmpty ? 'Tracking number is required.' : null,
   );
+
+  Widget _weightField() => TextFormField(
+    controller: _weightController,
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    decoration: const InputDecoration(
+      labelText: 'Package weight',
+      suffixText: 'kg',
+      hintText: '1.250',
+      border: OutlineInputBorder(),
+    ),
+    validator: (value) {
+      final weight = double.tryParse(value?.trim() ?? '');
+      if (weight == null || weight <= 0) {
+        return 'Enter a weight greater than zero.';
+      }
+      return null;
+    },
+  );
+
+  Widget _handlingTimeField(BuildContext context) {
+    final label = _isInbound ? 'Receiving time' : 'Send time';
+    final formatter = DateFormat('dd MMM yyyy, hh:mm a');
+    return InputDecorator(
+      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      child: Row(
+        children: [
+          Expanded(child: Text(formatter.format(_handlingTime))),
+          IconButton(
+            tooltip: 'Choose $label',
+            onPressed: _canSubmit ? _selectHandlingTime : null,
+            icon: const Icon(Icons.schedule_outlined),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _customerField() => DropdownButtonFormField<int>(
     initialValue: _customerId,
@@ -437,9 +512,18 @@ class _ShipmentCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Sender: ${shipment.customerName}'),
             Text('Route: ${shipment.originBranchName} → ${shipment.destinationBranchName}'),
+            Text(
+              shipment.packageWeightKg == null
+                  ? 'Weight: not recorded for this legacy shipment'
+                  : 'Weight: ${shipment.packageWeightKg!.toStringAsFixed(3)} kg',
+            ),
             Text('Recipient: ${shipment.recipientName}'),
             Text(shipment.recipientAddress, maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 8),
+            if (shipment.direction == 'Inbound' && shipment.receivedUtc != null)
+              Text('Received ${dateFormat.format(shipment.receivedUtc!)}'),
+            if (shipment.direction == 'Outbound' && shipment.sentUtc != null)
+              Text('Sent ${dateFormat.format(shipment.sentUtc!)}'),
             Text(
               'Created ${dateFormat.format(shipment.createdUtc)}',
               style: Theme.of(context).textTheme.bodySmall,

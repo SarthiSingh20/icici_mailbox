@@ -19,9 +19,16 @@ public sealed class CreateShipmentRequest
     [Range(1, int.MaxValue)]
     public int DestinationBranchId { get; init; }
 
+    [Range(typeof(decimal), "0.001", "1000000")]
+    public decimal PackageWeightKg { get; init; }
+
     [Required, StringLength(160)]
     public string RecipientName { get; init; } = string.Empty;
 
     [Required, StringLength(500)]
     public string RecipientAddress { get; init; } = string.Empty;
+
+    public DateTime? ReceivedUtc { get; init; }
+
+    public DateTime? SentUtc { get; init; }
 }
