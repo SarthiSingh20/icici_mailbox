@@ -10,6 +10,9 @@ public sealed class CreateShipmentRequest
     [Required, RegularExpression("^(Inbound|Outbound)$", ErrorMessage = "Direction must be Inbound or Outbound.")]
     public string Direction { get; init; } = string.Empty;
 
+    [Required, StringLength(160)]
+    public string SenderName { get; init; } = string.Empty;
+
     [Range(1, int.MaxValue)]
     public int CustomerId { get; init; }
 
@@ -22,11 +25,23 @@ public sealed class CreateShipmentRequest
     [Range(typeof(decimal), "0.001", "1000000")]
     public decimal PackageWeightKg { get; init; }
 
+    [Range(1, int.MaxValue)]
+    public int PackageCategoryId { get; init; }
+
+    [StringLength(500)]
+    public string? PackageDescription { get; init; }
+
     [Required, StringLength(160)]
     public string RecipientName { get; init; } = string.Empty;
 
     [Required, StringLength(500)]
     public string RecipientAddress { get; init; } = string.Empty;
+
+    [StringLength(160)]
+    public string? CourierServiceProvider { get; init; }
+
+    [StringLength(1000)]
+    public string? Remarks { get; init; }
 
     public DateTime? ReceivedUtc { get; init; }
 

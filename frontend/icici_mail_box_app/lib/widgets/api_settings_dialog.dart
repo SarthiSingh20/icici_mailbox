@@ -65,7 +65,10 @@ class _ApiSettingsDialogState extends State<ApiSettingsDialog> {
     content: SizedBox(
       width: 480,
       child: _isLoading
-          ? const SizedBox(height: 80, child: Center(child: CircularProgressIndicator()))
+          ? const SizedBox(
+              height: 80,
+              child: Center(child: CircularProgressIndicator()),
+            )
           : Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +90,9 @@ class _ApiSettingsDialogState extends State<ApiSettingsDialog> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ],
               ],
