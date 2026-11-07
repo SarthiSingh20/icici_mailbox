@@ -23,3 +23,4 @@
 **/appsettings.Local.json
 **/appsettings.Production.json
 *.env
+LOCAL-DEMO-CREDENTIALS.txt

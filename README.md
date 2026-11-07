@@ -18,27 +18,34 @@ Courier-management application using Flutter, ASP.NET Core 10, SQL Server, ADO.N
 
 Full Xcode is still required to run Flutter on an iOS simulator or physical iOS device.
 
-## First run
+## First run (local SQL Server)
 
-1. Provision or obtain a remote SQL Server/Azure SQL database, then follow [database setup](docs/DATABASE_SETUP.md).
-2. Run `database/Tables.sql`, `database/StoredProcedures.sql`, and `database/SeedData.sql`, in that order.
-3. Configure `ConnectionStrings__SqlServer` and `Authentication__Jwt__SigningKey` using user secrets locally or environment variables in deployment.
-4. Start the API:
+The local development setup uses SQL Server 2022 in Docker Desktop, not PostgreSQL. On Apple Silicon Macs this x64 SQL Server image runs under emulation and is unsupported by Microsoft; it works in this environment but may be slow or unstable. See [local database setup](docs/DATABASE_SETUP.md) for details.
+
+1. Start Docker Desktop and confirm the SQL container is running:
+
+   ```bash
+   docker ps --filter name=icici-mailbox-sql
+   ```
+
+   If it is stopped, start it with `docker start icici-mailbox-sql`.
+2. The database, schema, stored procedures, seed data, and local API user secrets have already been configured on this development Mac. On a fresh setup, follow [local database setup](docs/DATABASE_SETUP.md).
+3. Start the API in a VS Code terminal:
 
    ```bash
    cd backend/IciciMailBox.API
-   dotnet run
+   dotnet run --launch-profile http
    ```
 
-5. Confirm `https://localhost:<port>/health/ready` reports `"ready"` and open Swagger in development.
-6. Start the Flutter client:
+   Confirm `http://localhost:5053/health/ready` reports `"ready"` and `"database":"connected"`.
+4. In a second VS Code terminal, start Flutter:
 
    ```bash
    cd frontend/icici_mail_box_app
-   flutter run
+   flutter run -d chrome --web-port 8080
    ```
 
-The dashboard and shipment registers read live SQL Server data; connection errors are shown rather than replaced with demonstration statistics. Open **API connection settings** and set the API URL when running the API somewhere other than `http://localhost:5053`.
+Sign in using a development account listed in the local, Git-ignored `LOCAL-DEMO-CREDENTIALS.txt` file. The dashboard and shipment registers read live SQL Server data; connection errors are shown rather than replaced with demonstration statistics. The default API URL is `http://localhost:5053`.
 
 ## Explore the UI without SQL Server
 
@@ -55,7 +62,7 @@ Choose **Preview as branch operator** or **Preview as master user** on the sign-
 
 The Inbound and Outbound navigation items provide separate shipment forms and registers. Forms capture a unique tracking number, sender name and organization, origin and destination branches, package type, description, weight, recipient, handling date, courier, and remarks. Branch operators are restricted by the API to shipments involving their assigned branch; master users can filter across branches. New records begin as `Pending`. Status changes are recorded in shipment history and audit logs. The master dashboard includes organization-wide totals, branch distribution, recent shipments, user/branch administration, CSV report export, and audit activity.
 
-`database/SeedData.sql` installs clearly marked demonstration data (20 sample shipments, four branch operators, and one head-office account). Its shared development password is documented only for local testing; replace or remove demo accounts before deployment.
+`database/SeedData.sql` installs clearly marked demonstration data (20 sample shipments, four branch operators, and one head-office account). The local `LOCAL-DEMO-CREDENTIALS.txt` file is ignored by Git and contains the shared development sign-in details. These accounts and their password are for local testing only; replace or remove demo accounts before deployment.
 
 ## API baseline
 
@@ -73,12 +80,7 @@ The Inbound and Outbound navigation items provide separate shipment forms and re
 
 ## Demo sign-in (local testing only)
 
-Run the seed script to create accounts. The default local-only password is `ChangeMe!2026`:
-
-- Master: `ho.admin`
-- Branch operators: `mumbai.operator`, `delhi.operator`, `bengaluru.operator`, `chennai.operator`
-
-Do not use these demo accounts in a deployed environment. Create operational users through the master-only administration screen and deactivate/remove the seeded accounts.
+Run `database/SeedData.sql` to create the development accounts. Their usernames and shared local-only password are listed in `LOCAL-DEMO-CREDENTIALS.txt` on this machine. Do not use these demo accounts in a deployed environment. Create operational users through the master-only administration screen and deactivate/remove the seeded accounts.
 
 ## Packages
 
